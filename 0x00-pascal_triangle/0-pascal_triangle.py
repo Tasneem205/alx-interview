@@ -9,6 +9,8 @@ def pascal_triangle(n):
     str1 = [1]
     str2 = []
     tri.append(str1)
+    if n <= 0:
+        return []
     for _ in range(1, n):
         for i in range(0, len(str1) + 1):
             if i == 0 or i == len(str1):
