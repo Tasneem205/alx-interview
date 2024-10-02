@@ -9,7 +9,7 @@ def pascal_triangle(n):
     str1 = [1]
     str2 = []
     tri.append(str1)
-    if n <= 0:
+    if type(n) is not int or n <= 0:
         return []
     for _ in range(1, n):
         for i in range(0, len(str1) + 1):
