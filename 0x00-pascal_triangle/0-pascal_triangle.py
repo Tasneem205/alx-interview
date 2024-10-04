@@ -5,6 +5,7 @@ define pascal triangle in a string format
 
 
 def pascal_triangle(n):
+    """ function to return list of lists of pascal tri """
     tri = []
     str1 = [1]
     str2 = []
