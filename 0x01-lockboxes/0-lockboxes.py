@@ -8,6 +8,10 @@ def canUnlockAll(boxes):
     """
     return true if possible false otherwise
     """
+    if (type(boxes)) is not list:
+        return False
+    elif (len(boxes)) == 0:
+        return False
     opened = 0
     visited = [False] * len(boxes)
     q = []
