@@ -19,7 +19,7 @@ def canUnlockAll(boxes):
     opened += 1
     visited[0] = True
     for i in q:
-        if not visited[i]:
+        if i < len(boxes) and not visited[i]:
             visited[i] = True
             opened += 1
             q.extend(boxes[i])
