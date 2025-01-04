@@ -8,9 +8,9 @@ import re
 if __name__ == "__main__":
     total_size = 0
     line_count = 0
-    status_code_count = {}
+    status_code_frequency = {}
 
-    # Updated regular expression to match the generator's output
+    # Regular expression to match the required log format
     log_pattern = re.compile(
         r'^(\d{1,3}\.){3}\d{1,3} - \[' +
         r'.*?\] "GET /projects/260 HTTP/1\.1" (\d{3}) (\d+)$'
@@ -19,32 +19,38 @@ if __name__ == "__main__":
     try:
         while True:
             line = sys.stdin.readline().strip()
-            if not line:
+            if not line:  # Break if line is empty (EOF)
                 break
 
             match = log_pattern.match(line)
             if match:
-                file_size = int(match.group(3))
-                status_code = match.group(2)
+                # Extract file size and status code
+                try:
+                    file_size = int(match.group(3))
+                    status_code = match.group(2)
+                except ValueError:
+                    # Skip invalid lines if status code or file size is invalid
+                    continue
+
                 total_size += file_size
                 line_count += 1
 
-
-                if status_code in status_code_count:
-                    status_code_count[status_code] += 1
+                # Update the status code frequency
+                if status_code in status_code_frequency:
+                    status_code_frequency[status_code] += 1
                 else:
-                    status_code_count[status_code] = 1
+                    status_code_frequency[status_code] = 1
 
-
+                # Print metrics after every 10 lines
                 if line_count == 10:
                     print(f"File size: {total_size}")
-                    for code, count in sorted(status_code_count.items()):
-                        print(f"{code}: {count}")
-                    line_count = 0
-                    status_code_count.clear()
+                    for code in sorted(status_code_frequency.keys()):
+                        print(f"{code}: {status_code_frequency[code]}")
+                    line_count = 0  # Reset the line count
+                    status_code_frequency.clear()  # Clear the status code count
 
     except KeyboardInterrupt:
-        # Print final results on CTRL+C
+        # Handle keyboard interruption (Ctrl + C)
         print(f"\nFile size: {total_size}")
-        for code, count in sorted(status_code_count.items()):
-            print(f"{code}: {count}")
+        for code in sorted(status_code_frequency.keys()):
+            print(f"{code}: {status_code_frequency[code]}")
