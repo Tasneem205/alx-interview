@@ -1,6 +1,4 @@
 #!/usr/bin/python3
-"""states file"""
-
 import sys
 import re
 
@@ -9,10 +7,11 @@ if __name__ == "__main__":
     line_count = 0
     status_code_frequency = {}
 
-    # Updated regular expression to allow optional microseconds in the timestamp
+    # Updated regular expression to account for microseconds in the timestamp
     log_pattern = re.compile(
         r'^(\d{1,3}\.){3}\d{1,3} - \[' +
-        r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(\.\d{6})?\] "GET /projects/260 HTTP/1\.1" (\d{3}) (\d+)$'
+        r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}' +  # Date and time part
+        r'(\.\d{6})?\] "GET /projects/260 HTTP/1\.1" (\d{3}) (\d+)$'  # Optional microseconds, status code, file size
     )
 
     try:
@@ -29,8 +28,8 @@ if __name__ == "__main__":
             if match:
                 # Extract file size and status code
                 try:
-                    file_size = int(match.group(3))
-                    status_code = match.group(2)
+                    file_size = int(match.group(4))  # Fixed index to match group for file size
+                    status_code = match.group(3)  # Fixed index to match group for status code
                 except ValueError:
                     # Skip invalid lines if status code or file size is invalid
                     continue
