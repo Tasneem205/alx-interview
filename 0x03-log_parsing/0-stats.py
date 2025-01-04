@@ -1,60 +1,46 @@
 #!/usr/bin/python3
-"""states file"""
+
 import sys
-import re
 
-if __name__ == "__main__":
-    total_size = 0
-    line_count = 0
-    status_code_frequency = {}
 
-    # Updated regular expression to account for microseconds in the timestamp
-    log_pattern = re.compile(
-        r'^(\d{1,3}\.){3}\d{1,3} - \[' +
-        r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}' +  # Date and time part
-        r'(\.\d{6})?\] "GET /projects/260 HTTP/1\.1" (\d{3}) (\d+)$'  # Optional microseconds, status code, file size
-    )
+def print_msg(dict_sc, total_file_size):
+    """Method to print"""
+    print("File size: {}".format(total_file_size))
+    for key, val in sorted(dict_sc.items()):
+        if val != 0:
+            print("{}: {}".format(key, val))
 
-    try:
-        while True:
-            line = sys.stdin.readline().strip()
-            if not line:  # If no more input, break the loop
-                if line_count > 0:  # If there were any lines processed before EOF, print the result
-                    print(f"File size: {total_size}")
-                    for code in sorted(status_code_frequency.keys()):
-                        print(f"{code}: {status_code_frequency[code]}")
-                break  # End of file reached
 
-            match = log_pattern.match(line)
-            if match:
-                # Extract file size and status code
-                try:
-                    file_size = int(match.group(4))  # Fixed index to match group for file size
-                    status_code = match.group(3)  # Fixed index to match group for status code
-                except ValueError:
-                    # Skip invalid lines if status code or file size is invalid
-                    continue
+total_file_size = 0
+code = 0
+counter = 0
+dict_sc = {"200": 0,
+           "301": 0,
+           "400": 0,
+           "401": 0,
+           "403": 0,
+           "404": 0,
+           "405": 0,
+           "500": 0}
 
-                total_size += file_size
-                line_count += 1
+try:
+    for line in sys.stdin:
+        parsed_line = line.split()
+        parsed_line = parsed_line[::-1]
 
-                # Update the status code frequency
-                if status_code in status_code_frequency:
-                    status_code_frequency[status_code] += 1
-                else:
-                    status_code_frequency[status_code] = 1
+        if len(parsed_line) > 2:
+            counter += 1
 
-                # Print metrics after every 10 lines
-                if line_count == 10:
-                    print(f"File size: {total_size}")
-                    for code in sorted(status_code_frequency.keys()):
-                        print(f"{code}: {status_code_frequency[code]}")
-                    line_count = 0  # Reset the line count
-                    status_code_frequency.clear()  # Clear the status code count
+            if counter <= 10:
+                total_file_size += int(parsed_line[0])  # file size
+                code = parsed_line[1]  # status code
 
-    except KeyboardInterrupt:
-        # Handle keyboard interruption (Ctrl + C)
-        print(f"\nFile size: {total_size}")
-        for code in sorted(status_code_frequency.keys()):
-            print(f"{code}: {status_code_frequency[code]}")
+                if (code in dict_sc.keys()):
+                    dict_sc[code] += 1
 
+            if (counter == 10):
+                print_msg(dict_sc, total_file_size)
+                counter = 0
+
+finally:
+    print_msg(dict_sc, total_file_size)
