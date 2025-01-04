@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 """states file"""
 
-
 import sys
 import re
 
@@ -10,7 +9,7 @@ if __name__ == "__main__":
     line_count = 0
     status_code_frequency = {}
 
-    # Regular expression to match the required log format
+    # Updated regular expression to allow optional microseconds in the timestamp
     log_pattern = re.compile(
         r'^(\d{1,3}\.){3}\d{1,3} - \[' +
         r'.*?\] "GET /projects/260 HTTP/1\.1" (\d{3}) (\d+)$'
@@ -19,8 +18,12 @@ if __name__ == "__main__":
     try:
         while True:
             line = sys.stdin.readline().strip()
-            if not line:  # Break if line is empty (EOF)
-                break
+            if not line:  # If no more input, break the loop
+                if line_count > 0:  # If there were any lines processed before EOF, print the result
+                    print(f"File size: {total_size}")
+                    for code in sorted(status_code_frequency.keys()):
+                        print(f"{code}: {status_code_frequency[code]}")
+                break  # End of file reached
 
             match = log_pattern.match(line)
             if match:
@@ -54,3 +57,4 @@ if __name__ == "__main__":
         print(f"\nFile size: {total_size}")
         for code in sorted(status_code_frequency.keys()):
             print(f"{code}: {status_code_frequency[code]}")
+
